@@ -18,7 +18,7 @@ module Enumerable
         min += 1
       end
     else
-      to_enum(self)
+      to_enum(:my_each)
     end
   end
 
@@ -40,7 +40,7 @@ module Enumerable
         min += 1
       end
     else
-      to_enum(self)
+      to_enum(:my_each_with_index)
     end
 end
 
@@ -52,16 +52,15 @@ end
       end
       selection
     else
-      to_enum(self)
+      to_enum(:my_select)
     end
   end
 
   def my_all(param = nil)
     bool = true
-    case param
-    when param.nil? && block_given?
+    if param.nil? && block_given?
       my_each { |x| bool = false unless yield(x) }
-    when param.is_a?(Regexp)
+    elsif param.is_a?(Regexp)
       my_each { |x| bool = false unless x.match(param)}
     
     end
