@@ -6,7 +6,6 @@
 
 - RUBOCOP
 - RUBY
-- Vim
 
 ## Getting Started
 
