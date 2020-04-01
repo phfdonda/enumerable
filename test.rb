@@ -1,5 +1,2 @@
-def test
-  yield
-end
+p 2 if 2 + 2 == 4
 
-test{|x| puts "Hey"}

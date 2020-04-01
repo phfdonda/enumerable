@@ -5,14 +5,14 @@ module Enumerable
   def my_each
     return to_enum :my_each unless block_given?
 
-    if Array
+    if is_a? Array
       min = 0
       max = length
       max.times do
         yield(self[min])
         min += 1
       end
-    elsif Range
+    elsif is_a? Range
       min = self.min
       max = self.max
       until min == max
@@ -25,9 +25,8 @@ module Enumerable
   def my_each_with_index
     return to_enum :my_each_with_index unless block_given?
 
-  
     i = 0
-    if Array
+    if is_a? Array
       min = 0
       max = length
       max.times do
@@ -35,7 +34,7 @@ module Enumerable
         min += 1
         i += 1
       end
-    elsif Range
+    elsif is_a? Range
       min = self.min
       max = self.max
       until min == max
@@ -108,82 +107,26 @@ end
     counter
   end
 
-  # def my_map(proc = nil)
-  #   return to_enum(:my_map) unless block_given?
-
-  #   a = []
-  #   # length.times { |i| a.push proc.call(self[i]) } if proc Array
-  #   self.max.times { |i| a.push yield i } if proc Range
-
-  #   a
-  # end
-
   def my_map(&proc)
-    return to_enum :my_map unless block_given?
+    return to_enum(:my_map) unless block_given?
 
-    results = []
-    my_each { |x| results << proc.call(x) }
-    results
- end
+    array = is_a?(Array) ? self : to_a
+    a = []
+    array.my_each { |i| a.push proc.call(i) }
+    a
+  end
 
-  #   def my_map(&proc)
-  #   return to_enum :my_map unless block_given?
+  def my_inject(arg1 = nil, arg2 = nil)
+    arr = is_a?(Array) ? self : to_a
+    sym = arg1 if arg1.is_a?(Symbol) || arg1.is_a?(String)
+    acc = arg1 if arg1.is_a? Integer
 
-  #   results = []
-  #   my_each { |x| results << proc.call(x) }
-  #   results
-  # end
-
-  def my_inject; end
+    if sym
+      # We use send() method to dynamically assign the appropriate attribute.
+      arr.my_each { |i| acc = acc ? acc.send(sym, i) : i }
+    elsif block_given?
+      arr.my_each { |i| acc = acc ? yield(acc, i) : i }
+    end
+    acc
+  end
 end
-# a = [3, -8, 5, -9, 6, -2, 5, 8, -6, 0]
-# b = (0..40)
-
-# hash = Hash.new
-# %w(cat dog wombat).my_each_with_index { |item, index| hash[item] = index}
-# p hash     #=> {"cat"=>0, "dog"=>1, "wombat"=>2}
-
-# a.my_each { |x| puts x * 2 }
-# b.my_each
-# a.my_each_with_index { |n, i| puts "#{n}: #{i}" }
-# b.my_each_with_index
-# # # print(a.my_select { |x| x.to_i.positive? })
-
-# p %w[ant bear cat].my_all? { |word| word.length >= 3 } #=> true
-# p %w[ant bear cat].my_all? { |word| word.length >= 4 } #=> false
-# p %w[ant bear cat].my_all?(/t/)                        #=> false
-# p [1, 2i, 3.14].my_all?(Numeric)                       #=> true
-# p [nil, true, 99].my_all?                              #=> false
-# p [].my_all?                                           #=> true
-
-# p '******'
-
-# p %w[ant bear cat].my_any? { |word| word.length >= 3 } #=> true
-# p %w[ant bear cat].my_any? { |word| word.length >= 4 } #=> true
-# p %w[ant bear cat].my_any?(/d/)                        #=> false
-# p [nil, true, 99].my_any?(Integer)                     #=> true
-# p [nil, true, 99].my_any?                              #=> true
-# p [].my_any?                                           #=> false
-
-# p '******'
-
-# p %w[ant bear cat].my_none? { |word| word.length == 5 } #=> true
-# p %w[ant bear cat].my_none? { |word| word.length >= 4 } #=> false
-# p %w[ant bear cat].my_none?(/d/)                        #=> true
-# p [1, 3.14, 42].my_none?(Float)                         #=> false
-# p [].my_none?                                           #=> true
-# p [nil].my_none?                                        #=> true
-# p [nil, false].my_none?                                 #=> true
-# p [nil, false, true].my_none?                           #=> false
-
-# p '******'
-
-# p ary = [1, 2, 4, 2]
-# p ary.my_count               #=> 4
-# p ary.my_count(2)            #=> 2
-# p ary.my_count(&:even?) #=> 3
-
-# p '******'
-
-p (1..4).my_map { |i| i * i } #=> [1, 4, 9, 16]
-p (1..4).my_map { 'cat' } #=> ["cat", "cat", "cat", "cat"]
