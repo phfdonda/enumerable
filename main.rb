@@ -63,6 +63,8 @@ end
       my_each { |i| return false unless i.match(arg) }
     elsif arg.is_a? Module
       my_each { |i| return false unless i.is_a?(arg) }
+    elsif !block_given? || arg.nil?
+      my_each { |i| return false unless i.nil? || i == false }
     else
       my_each { |i| return false if i.nil? || i == false }
     end
@@ -76,6 +78,8 @@ end
       my_each { |i| return true if i.match(arg) }
     elsif arg.is_a? Module
       my_each { |i| return true if i.is_a?(arg) }
+    elsif !block_given? || arg.nil?
+      my_each { |i| return true unless i.nil? || i == false }
     else
       my_each { |i| return true if i.nil? || i == false }
     end
@@ -83,14 +87,16 @@ end
  end
 
   def my_none?(arg = nil)
-    if arg.nil? && block_given?
+    if block_given?
       my_each { |i| return false if yield(i) }
     elsif arg.is_a? Regexp
       my_each { |i| return false if i.match(arg) }
     elsif arg.is_a? Module
       my_each { |i| return false if i.is_a?(arg) }
+    elsif !block_given? || arg.nil?
+      my_each { |i| return false if i.nil? || i == false }
     else
-      my_each { |i| return false unless i.nil? || i == false }
+      my_each { |i| return false unless i == false }
     end
     true
   end
@@ -119,7 +125,11 @@ end
   def my_inject(arg1 = nil, arg2 = nil)
     arr = is_a?(Array) ? self : to_a
     sym = arg1 if arg1.is_a?(Symbol) || arg1.is_a?(String)
-    acc = arg1 if arg1.is_a? Integer
+    
+    if arg1.is_a?(Integer)
+      acc = arg1
+      sym = arg2 if arg2.is_a?(Symbol) || arg2.is_a?(String)
+    end
 
     if sym
       # We use send() method to dynamically assign the appropriate attribute.
@@ -129,4 +139,16 @@ end
     end
     acc
   end
+
+  def multiply_els(arr)
+    arr.my_inject { |acc, curr| acc * curr }
+  end
 end
+
+p 'false false true true 302400'
+
+p [3, 3, 3, 3, 4].my_all?(3)
+p [nil, false, nil, false].my_any?
+p ['cat', 2, 32].my_any?('cat')
+p ['hello'].my_none?(5)
+p (5..10).my_inject(2, :*)
