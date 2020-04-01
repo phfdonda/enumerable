@@ -2,30 +2,32 @@
 
 # This is a modified version of the Enumerable module.
 module Enumerable
- 
   def my_each
-    if block_given?
+    return to_enum :my_each unless block_given?
+
+    if Array
       min = 0
       max = length
       max.times do
         yield(self[min])
         min += 1
       end
-    elsif is_a? Range
+    elsif Range
       min = self.min
       max = self.max
       until min == max
         p min
         min += 1
       end
-    else
-      to_enum(:my_each)
     end
   end
 
   def my_each_with_index
+    return to_enum :my_each_with_index unless block_given?
+
+  
     i = 0
-    if block_given?
+    if Array
       min = 0
       max = length
       max.times do
@@ -33,15 +35,13 @@ module Enumerable
         min += 1
         i += 1
       end
-    elsif is_a? Range
+    elsif Range
       min = self.min
       max = self.max
       until min == max
         p min
         min += 1
       end
-    else
-      to_enum(:my_each_with_index)
     end
 end
 
@@ -95,18 +95,44 @@ end
     end
     true
   end
-  
+
   def my_count(arg = nil)
-    counter = 0
+    counter = length
     if block_given?
+      counter = 0
       my_each { |i| counter += 1 if yield i }
-    else
-      counter = length
+    elsif !arg.nil?
+      counter = 0
+      my_each { |i| counter += 1 if arg == i }
     end
     counter
   end
 
-  def my_map; end
+  # def my_map(proc = nil)
+  #   return to_enum(:my_map) unless block_given?
+
+  #   a = []
+  #   # length.times { |i| a.push proc.call(self[i]) } if proc Array
+  #   self.max.times { |i| a.push yield i } if proc Range
+
+  #   a
+  # end
+
+  def my_map(&proc)
+    return to_enum :my_map unless block_given?
+
+    results = []
+    my_each { |x| results << proc.call(x) }
+    results
+ end
+
+  #   def my_map(&proc)
+  #   return to_enum :my_map unless block_given?
+
+  #   results = []
+  #   my_each { |x| results << proc.call(x) }
+  #   results
+  # end
 
   def my_inject; end
 end
@@ -152,7 +178,12 @@ end
 
 # p '******'
 
-p ary = [1, 2, 4, 2]
-p ary.my_count               #=> 4
-p ary.my_count(2)            #=> 2
-p ary.my_count{ |x| x%2==0 } #=> 3
+# p ary = [1, 2, 4, 2]
+# p ary.my_count               #=> 4
+# p ary.my_count(2)            #=> 2
+# p ary.my_count(&:even?) #=> 3
+
+# p '******'
+
+p (1..4).my_map { |i| i * i } #=> [1, 4, 9, 16]
+p (1..4).my_map { 'cat' } #=> ["cat", "cat", "cat", "cat"]
