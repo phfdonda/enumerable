@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# Blabla
+# This is a modified version of the Enumerable module.
 module Enumerable
+ 
   def my_each
     if block_given?
       min = 0
@@ -56,30 +57,60 @@ end
     end
   end
 
-  def my_all(param = nil)
-    bool = true
-    if param.nil? && block_given?
-      my_each { |x| bool = false unless yield(x) }
-    elsif param.is_a?(Regexp)
-      my_each { |x| bool = false unless x.match(param)}
-    
+  def my_all?(arg = nil)
+    if arg.nil? && block_given?
+      my_each { |i| return false unless yield(i) }
+    elsif arg.is_a? Regexp
+      my_each { |i| return false unless i.match(arg) }
+    elsif arg.is_a? Module
+      my_each { |i| return false unless i.is_a?(arg) }
+    else
+      my_each { |i| return false if i.nil? || i == false }
     end
-
-  
+    true
   end
 
-  def my_any; end
+  def my_any?(arg = nil)
+    if arg.nil? && block_given?
+      my_each { |i| return true if yield(i) }
+    elsif arg.is_a? Regexp
+      my_each { |i| return true if i.match(arg) }
+    elsif arg.is_a? Module
+      my_each { |i| return true if i.is_a?(arg) }
+    else
+      my_each { |i| return true if i.nil? || i == false }
+    end
+    false
+ end
 
-  def my_none; end
-
-  def my_count; end
+  def my_none?(arg = nil)
+    if arg.nil? && block_given?
+      my_each { |i| return false if yield(i) }
+    elsif arg.is_a? Regexp
+      my_each { |i| return false if i.match(arg) }
+    elsif arg.is_a? Module
+      my_each { |i| return false if i.is_a?(arg) }
+    else
+      my_each { |i| return false unless i.nil? || i == false }
+    end
+    true
+  end
+  
+  def my_count(arg = nil)
+    counter = 0
+    if block_given?
+      my_each { |i| counter += 1 if yield i }
+    else
+      counter = length
+    end
+    counter
+  end
 
   def my_map; end
 
   def my_inject; end
 end
-
-a = [3, -8, 5, -9, 6, -2, 5, 8, -6, 0]
+# a = [3, -8, 5, -9, 6, -2, 5, 8, -6, 0]
 # b = (0..40)
 
 # hash = Hash.new
@@ -90,4 +121,38 @@ a = [3, -8, 5, -9, 6, -2, 5, 8, -6, 0]
 # b.my_each
 # a.my_each_with_index { |n, i| puts "#{n}: #{i}" }
 # b.my_each_with_index
-print(a.my_select { |x| x.to_i.positive? })
+# # # print(a.my_select { |x| x.to_i.positive? })
+
+# p %w[ant bear cat].my_all? { |word| word.length >= 3 } #=> true
+# p %w[ant bear cat].my_all? { |word| word.length >= 4 } #=> false
+# p %w[ant bear cat].my_all?(/t/)                        #=> false
+# p [1, 2i, 3.14].my_all?(Numeric)                       #=> true
+# p [nil, true, 99].my_all?                              #=> false
+# p [].my_all?                                           #=> true
+
+# p '******'
+
+# p %w[ant bear cat].my_any? { |word| word.length >= 3 } #=> true
+# p %w[ant bear cat].my_any? { |word| word.length >= 4 } #=> true
+# p %w[ant bear cat].my_any?(/d/)                        #=> false
+# p [nil, true, 99].my_any?(Integer)                     #=> true
+# p [nil, true, 99].my_any?                              #=> true
+# p [].my_any?                                           #=> false
+
+# p '******'
+
+# p %w[ant bear cat].my_none? { |word| word.length == 5 } #=> true
+# p %w[ant bear cat].my_none? { |word| word.length >= 4 } #=> false
+# p %w[ant bear cat].my_none?(/d/)                        #=> true
+# p [1, 3.14, 42].my_none?(Float)                         #=> false
+# p [].my_none?                                           #=> true
+# p [nil].my_none?                                        #=> true
+# p [nil, false].my_none?                                 #=> true
+# p [nil, false, true].my_none?                           #=> false
+
+# p '******'
+
+p ary = [1, 2, 4, 2]
+p ary.my_count               #=> 4
+p ary.my_count(2)            #=> 2
+p ary.my_count{ |x| x%2==0 } #=> 3
