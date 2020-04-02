@@ -63,25 +63,25 @@ end
       my_each { |i| return false unless i.match(arg) }
     elsif arg.is_a? Module
       my_each { |i| return false unless i.is_a?(arg) }
-    elsif !block_given? || arg.nil?
-      my_each { |i| return false unless i.nil? || i == false }
+    elsif arg.nil?
+      my_each { |i| return false if i.nil? || !i }
     else
-      my_each { |i| return false if i.nil? || i == false }
+      my_each { |i| return false unless i == arg }
     end
     true
   end
 
   def my_any?(arg = nil)
-    if arg.nil? && block_given?
+    if block_given?
       my_each { |i| return true if yield(i) }
     elsif arg.is_a? Regexp
       my_each { |i| return true if i.match(arg) }
     elsif arg.is_a? Module
       my_each { |i| return true if i.is_a?(arg) }
-    elsif !block_given? || arg.nil?
+    elsif arg.nil?
       my_each { |i| return true unless i.nil? || i == false }
     else
-      my_each { |i| return true if i.nil? || i == false }
+      my_each { |i| return true if i == arg }
     end
     false
  end
@@ -93,10 +93,10 @@ end
       my_each { |i| return false if i.match(arg) }
     elsif arg.is_a? Module
       my_each { |i| return false if i.is_a?(arg) }
-    elsif !block_given? || arg.nil?
-      my_each { |i| return false if i.nil? || i == false }
+    elsif arg.nil?
+      my_each { |i| return false unless i.nil? || i == false }
     else
-      my_each { |i| return false unless i == false }
+      my_each { |i| return false if i == false }
     end
     true
   end
@@ -145,10 +145,4 @@ end
   end
 end
 
-p 'false false true true 302400'
 
-p [3, 3, 3, 3, 4].my_all?(3)
-p [nil, false, nil, false].my_any?
-p ['cat', 2, 32].my_any?('cat')
-p ['hello'].my_none?(5)
-p (5..10).my_inject(2, :*)
