@@ -1,4 +1,3 @@
-# frozen_string_literal: true
 
 # This is a modified version of the Enumerable module.
 module Enumerable
@@ -96,7 +95,8 @@ end
     elsif arg.nil?
       my_each { |i| return false unless i.nil? || i == false }
     else
-      my_each { |i| return false if i == false }
+      p "test"
+      my_each { |i| return false if i == arg }
     end
     true
   end
@@ -144,5 +144,3 @@ end
     arr.my_inject { |acc, curr| acc * curr }
   end
 end
-
-
